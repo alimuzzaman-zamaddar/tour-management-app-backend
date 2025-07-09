@@ -1,6 +1,9 @@
+import { httpStatus } from 'http-status-codes';
 import express, { Request, Response } from "express";
 import cors from "cors"
 import { router } from "./app/routes";
+import { globalErrorHandler } from "./app/middlewares/globalerrorhandler";
+import { notFound } from './app/middlewares/notFound';
 
 const app = express();
 app.use(express.json())
@@ -15,5 +18,9 @@ app.get("/", (req: Request, res: Response) => {
     message: "welcome to Tour management system Backend",
   });
 });
+
+app.use(globalErrorHandler)
+
+app.use(notFound)
 
 export default app;
