@@ -1,42 +1,87 @@
 /* eslint-disable no-console */
-
 import { Server } from "http";
 import mongoose from "mongoose";
 import app from "./app";
 import { envVars } from "./app/config/env";
+import { seedSuperAdmin } from "./app/utils/seedSuperAdmin";
 
 let server: Server;
 
-
 const startServer = async () => {
   try {
-    await mongoose.connect(envVars.DB_URL)
-  
-  console.log("connected to DB");
-server = app.listen(5000, () => {
-    console.log(`the port is listening to ${envVars.PORT}`);
-  });
+    await mongoose.connect(envVars.DB_URL);
+
+    console.log("Connected to DB!!");
+
+    server = app.listen(envVars.PORT, () => {
+      console.log(`Server is listening to port ${envVars.PORT}`);
+    });
   } catch (error) {
     console.log(error);
-    
   }
-  
-}
+};
 
-startServer()
+(async () => {
+  await startServer();
+  await seedSuperAdmin();
+})();
 
-process.once("SIGTERM", () => {
-  console.log("SIGTERM SIGNAL RECIEVED ... Server shutting down ..");
+process.on("SIGTERM", () => {
+  console.log("SIGTERM signal recieved... Server shutting down..");
 
   if (server) {
     server.close(() => {
       process.exit(1);
-    })
-   
+    });
   }
-})
 
-// Promise.reject(new Error("i forgot to catch this promise"))
+  process.exit(1);
+});
 
-// unhandled rejection error
-// throw new Error ("i forgot to handle this local error")
+process.on("SIGINT", () => {
+  console.log("SIGINT signal recieved... Server shutting down..");
+
+  if (server) {
+    server.close(() => {
+      process.exit(1);
+    });
+  }
+
+  process.exit(1);
+});
+
+process.on("unhandledRejection", err => {
+  console.log("Unhandled Rejecttion detected... Server shutting down..", err);
+
+  if (server) {
+    server.close(() => {
+      process.exit(1);
+    });
+  }
+
+  process.exit(1);
+});
+
+process.on("uncaughtException", err => {
+  console.log("Uncaught Exception detected... Server shutting down..", err);
+
+  if (server) {
+    server.close(() => {
+      process.exit(1);
+    });
+  }
+
+  process.exit(1);
+});
+
+// Unhandler rejection error
+// Promise.reject(new Error("I forgot to catch this promise"))
+
+// Uncaught Exception Error
+// throw new Error("I forgot to handle this local erro")
+
+/**
+ * unhandled rejection error
+ * uncaught rejection error
+ * signal termination sigterm
+ */
